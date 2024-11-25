@@ -25,7 +25,7 @@ export const deleteGig = async(req,res,next) => {
     try{
         const gig = await prisma.gig.findUnique({where: {id:parseInt(req.params.id)}})
 
-        if(!gig || !gig.userId !== req.userId)
+        if(!gig || gig.userId !== req.userId)
             return next(createError(403,"You can delete only your gig!"))
     
         await prisma.gig.delete({where: {id: parseInt(req.params.id)}});
