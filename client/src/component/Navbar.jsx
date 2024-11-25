@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import newRequest from "../utils/newRequest";
 
 function Navbar() {
   const [active, setActive] = useState(false);
@@ -18,13 +19,22 @@ function Navbar() {
     };
   }, []);
 
-  // const currentUser = null
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  console.log("Current user--->",currentUser)
 
-  const currentUser = {
-    id: 1,
-    username: "Anna",
-    isSeller: true,
-  };
+  const navigate = useNavigate();
+
+  const handleLogout = async() => {
+    try{
+      await newRequest.post("/auth/logout");
+      localStorage.setItem("currentUser",null);
+      navigate("/");
+
+
+    }catch(err){
+      console.log(err)
+    }
+  }
 
   return (
     <div
@@ -73,7 +83,7 @@ function Navbar() {
                   <Link className="hover:text-green-600" to="/messages">
                     Messages
                   </Link>
-                  <Link className="hover:text-green-600" to="/">
+                  <Link className="hover:text-green-600" onClick={handleLogout}>
                     Logout
                   </Link>
                 </div>
@@ -81,7 +91,7 @@ function Navbar() {
             </div>
           ) : (
             <>
-              <span className="cursor-pointer">Sign in</span>
+             <Link to="/login" className="link">Sign in</Link>
               <Link to="/register">
                 <button className="border border-white py-2 px-4 rounded-md text-white hover:bg-green-600 hover:border-green-600">
                   Join
