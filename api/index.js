@@ -31,7 +31,31 @@ const prisma = new PrismaClient();
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// 
+
+
+const allowedOrigins = [
+  "http://localhost:3000", // For local development
+  "https://freelance-space-ai.vercel.app", // Vercel default domain
+  "https://yourdomain.com", // Your custom domain (if applicable)
+];
+
+// Configure CORS
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // If you're using cookies or authentication headers
+  })
+);
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 
