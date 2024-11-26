@@ -113,8 +113,13 @@ app.use((err, req, res, next) => {
   return res.status(status).json({ error: message });
 });
 
+
+const PORT = process.env.PORT || 8800;
+
+
+
 // Start server and connect to the database
-app.listen(8800, async () => {
+app.listen(PORT, async () => {
   try {
     await prisma.$connect();
     console.log("Connected to PostgreSQL with Prisma!");

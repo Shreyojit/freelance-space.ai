@@ -40,17 +40,47 @@ export const updateConversation = async (req, res, next) => {
 
 export const getSingleConversation = async (req, res, next) => {
   try {
+    // Log the type and value of req.params.id
+    console.log("Received ID (type and value):", typeof req.params.id, req.params.id);
+
+    // Convert the ID from string to integer
+    const conversationId = parseInt(req.params.id, 10);
+
+    // Log the type and value after conversion
+    console.log("Parsed ID (type and value):", typeof conversationId, conversationId);
+
+    // Check if the conversion is successful
+    if (isNaN(conversationId)) {
+      console.log("Invalid ID provided.");
+      return next(createError(400, "Invalid conversation ID!")); // Respond with a 400 error for invalid IDs
+    }
+
+    // Query the database
     const conversation = await prisma.conversation.findUnique({
-      where: { id: req.params.id },
+      where: { id: conversationId },
+      include: {
+        messages: true, // Include related messages if needed
+      },
     });
 
-    if (!conversation) return next(createError(404, "Not found!"));
+    // Handle "not found" scenario
+    if (!conversation) {
+      console.log("Conversation not found for ID:", conversationId);
+      return next(createError(404, "Conversation not found!"));
+    }
 
-    res.status(200).send(conversation);
+    // Log the fetched conversation
+    console.log("Fetched Conversation:", conversation);
+
+    // Send the conversation data as a response
+    res.status(200).json(conversation);
   } catch (err) {
+    // Log the error
+    console.error("Error occurred:", err);
     next(err);
   }
 };
+
 
 export const getConversations = async (req, res, next) => {
   try {
