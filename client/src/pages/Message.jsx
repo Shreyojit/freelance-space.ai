@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import newRequest from "../utils/newRequest";
 
 const Message = () => {
   const { id } = useParams(); // Get conversation ID from URL params
+  
+  console.log("Coversation Id-->",id)
+  
   const currentUser = JSON.parse(localStorage.getItem("currentUser")); // Get current user from local storage
 
   const queryClient = useQueryClient(); // To manage cache invalidation
@@ -15,6 +18,13 @@ const Message = () => {
     queryFn: () =>
       newRequest.get(`/messages/${id}`).then((res) => res.data),
   });
+
+  // Print messages to the console (if data is available)
+  useEffect(() => {
+    if (data) {
+      console.log("Fetched Messages:", data);
+    }
+  }, [data]); // This effect will run whenever data is updated
 
   // Mutation to send a new message
   const mutation = useMutation({
@@ -55,7 +65,7 @@ const Message = () => {
               <div
                 key={message._id}
                 className={`flex gap-4 max-w-[600px] items-center ${
-                  message.userId === currentUser.id
+                  message.userId === currentUser._id
                     ? "flex-row-reverse self-end"
                     : ""
                 }`}
@@ -87,7 +97,7 @@ const Message = () => {
             ></textarea>
             <button
               type="submit"
-              className="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition"
+              className="bg-green-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-600 transition"
             >
               Send
             </button>

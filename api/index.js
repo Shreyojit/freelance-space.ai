@@ -30,14 +30,12 @@ const prisma = new PrismaClient();
 // Initialize Express
 const app = express();
 
-// Middleware
-// 
 
 
 const allowedOrigins = [
-  "http://localhost:3000", // For local development
-  "https://freelance-space-ai.vercel.app", // Vercel default domain
-  "https://yourdomain.com", // Your custom domain (if applicable)
+  "http://localhost:3000", // Frontend local domain
+  "https://freelance-space-ai.vercel.app", // Vercel production domain
+  "https://yourdomain.com", // Custom production domain (if applicable)
 ];
 
 // Configure CORS
@@ -45,17 +43,25 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+        callback(null, true); // Allow the origin
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // If you're using cookies or authentication headers
+    credentials: true, // Allow cookies or authentication headers
   })
 );
 
+// Handle preflight OPTIONS requests for CORS
+app.options("*", cors()); // Enable preflight for all routes
 
 
+
+
+
+
+// Middleware
+// app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -116,14 +122,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8800;
 
-
-
 // Start server and connect to the database
 app.listen(PORT, async () => {
   try {
     await prisma.$connect();
     console.log("Connected to PostgreSQL with Prisma!");
-    console.log("Server is running on http://localhost:8800");
+    console.log(`Server is running on port ${PORT}`);
   } catch (error) {
     console.error("Error connecting to the database:", error);
   }
