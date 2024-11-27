@@ -109,17 +109,17 @@ function Register() {
                 onChange={handleSeller}
                 className="opacity-0 w-0 h-0"
               />
-              <span
+              <div
                 className={`absolute inset-0 bg-gray-400 rounded-full cursor-pointer transition-all ${
                   user.isSeller ? "bg-green-500" : "bg-gray-400"
                 }`}
               >
                 <span
-                  className={`w-6 h-6 bg-white rounded-full transition-transform transform ${
+                  className={`absolute w-6 h-6 bg-white rounded-full transition-transform transform ${
                     user.isSeller ? "translate-x-6" : "translate-x-0"
                   }`}
                 ></span>
-              </span>
+              </div>
             </label>
           </div>
           <label className="text-gray-500 text-xl">Phone Number</label>
