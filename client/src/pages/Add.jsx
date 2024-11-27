@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { upload } from "../utils/upload.js"; // Image upload function
-import { useMutation,useQueryClient } from "@tanstack/react-query"; // Using Tanstack Query (React Query)
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // Using Tanstack Query (React Query)
 import axios from "axios"; // For making API requests
+import { FaTrash } from "react-icons/fa";
+import { AiOutlinePlus, AiOutlineDelete } from "react-icons/ai"; 
+import { CiCirclePlus } from "react-icons/ci";
+
 
 const Add = () => {
   const {
@@ -14,6 +18,7 @@ const Add = () => {
 
   const [features, setFeatures] = useState([]);
   const [imageUrls, setImageUrls] = useState([]); // State to hold the image URLs
+  const [isUploading, setIsUploading] = useState(false);  // State to track loading status
 
   const queryClient = useQueryClient(); // Hook to access the queryClient
 
@@ -47,20 +52,9 @@ const Add = () => {
       let coverImageUrl = "";
       if (data.coverImage[0]) {
         coverImageUrl = await upload(data.coverImage[0]);
+        console.log("Cover image uploaded successfully:", coverImageUrl);
       }
-  
-      // Upload additional images to Cloudinary
-      let uploadedUrls = [];
-      if (data.uploadImages && data.uploadImages.length > 0) {
-        const imageUploadPromises = Array.from(data.uploadImages).map((file) =>
-          upload(file)
-        );
-        uploadedUrls = await Promise.all(imageUploadPromises); // Wait for all images to be uploaded
-      }
-  
-      // Now that the images are uploaded, set the image URLs state
-      setImageUrls(uploadedUrls); // Update the state with the uploaded image URLs
-  
+
       // Prepare gig data
       const gigData = {
         userId: JSON.parse(localStorage.getItem("currentUser"))?.id, // Assuming user data is stored in localStorage
@@ -69,14 +63,14 @@ const Add = () => {
         cat: data.cat,
         price: parseInt(data.price, 10),
         cover: coverImageUrl,
-        images: uploadedUrls, // Use the uploaded image URLs
+        images: imageUrls, // Send the image URLs array
         shortTitle: data.shortTitle,
         shortDesc: data.shortDesc,
         deliveryTime: parseInt(data.deliveryTime, 10),
         revisionNumber: parseInt(data.revisionNumber, 10),
         features: features, // Use state for features
       };
-  
+
       // Trigger mutation to create the gig
       mutation.mutate(gigData);
     } catch (error) {
@@ -84,7 +78,17 @@ const Add = () => {
       alert("Failed to upload images. Please try again.");
     }
   };
-  
+
+  // Function to handle image deletion
+const handleDeleteImage = (index) => {
+  setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
+};
+
+// Function to handle deleting a feature
+const handleDeleteFeature = (index) => {
+  setFeatures((prevFeatures) => prevFeatures.filter((_, i) => i !== index));
+};
+
 
   // Function to handle adding a new feature
   const handleAddFeature = () => {
@@ -98,6 +102,23 @@ const Add = () => {
       newFeatures[index] = value;
       return newFeatures;
     });
+  };
+
+  // Function to handle image upload and push the image URL into the array
+  const handleImageUpload = async (files) => {
+    setIsUploading(true); // Show the spinner
+    if (files && files.length > 0) {
+      const uploadedUrls = await Promise.all(
+        Array.from(files).map(async (file) => {
+          const uploadedUrl = await upload(file);
+          console.log("Image uploaded successfully:", uploadedUrl);
+          return uploadedUrl;
+        })
+      );
+      // Append new URLs to the imageUrls state
+      setImageUrls((prevUrls) => [...prevUrls, ...uploadedUrls]);
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -158,28 +179,52 @@ const Add = () => {
                 />
               </div>
 
-              {/* Upload Images Field */}
-              <div className="space-y-2">
-                <label htmlFor="uploadImages" className="text-gray-600 text-lg">
-                  Upload Images
-                </label>
-                <input
-                  id="uploadImages"
-                  type="file"
-                  multiple
-                  className="w-full p-4 border border-gray-300 rounded-lg"
-                  {...register("uploadImages")}
-                />
-              </div>
+             
+      {/* Upload Images Field */}
+      <div className="space-y-2">
+        <label htmlFor="uploadImages" className="text-gray-600 text-lg">
+          Upload Images
+        </label>
+        <input
+          id="uploadImages"
+          type="file"
+          multiple
+          className="w-full p-4 border border-gray-300 rounded-lg"
+          {...register("uploadImages")}
+          onChange={(e) => handleImageUpload(e.target.files)} // Call the handleImageUpload function
+        />
+      </div>
 
+     {/* Display Uploaded Images */}
 
-              {/* Display uploaded image URLs as comma-separated list */}
-              {imageUrls.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-gray-600 text-lg">Uploaded Images</label>
-                  <p className="text-gray-600">{imageUrls.join(", ")}</p>
-                </div>
-              )}
+{/* Display Uploaded Images */}
+{imageUrls.length > 0 && (
+  <div className="space-y-2">
+    <label className="text-gray-600 text-lg">Uploaded Images</label>
+    <div className="flex flex-wrap gap-4">
+      {imageUrls.map((url, index) => (
+        <div key={index} className="relative w-32 h-32">
+          {/* Image */}
+          <img
+            src={url}
+            alt={`Uploaded Image ${index + 1}`}
+            className="w-full h-full object-cover rounded-lg"
+          />
+          
+          {/* Delete Icon */}
+          <button
+            type="button"
+            onClick={() => handleDeleteImage(index)} // Call delete function when clicked
+            className="absolute top-0 right-0 bg-white p-1 rounded-full text-red-500 hover:bg-gray-200"
+          >
+            <FaTrash size={16} />
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
               {/* Description Field */}
               <div className="space-y-2">
@@ -284,30 +329,45 @@ const Add = () => {
                 )}
               </div>
 
-              {/* Features Section */}
-              <div className="space-y-2">
-                <label className="text-gray-600 text-lg">Features</label>
-                {features.map((feature, index) => (
-                  <div key={index} className="flex gap-4">
-                    <input
-                      type="text"
-                      value={feature}
-                      onChange={(e) =>
-                        handleFeatureChange(index, e.target.value)
-                      }
-                      className="w-full p-4 border border-gray-300 rounded-lg"
-                      placeholder={`Feature ${index + 1}`}
-                    />
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddFeature}
-                  className="mt-2 text-blue-500"
-                >
-                  Add another feature
-                </button>
-              </div>
+            {/* Features Section */}
+<div className="space-y-2">
+  <label className="text-gray-600 text-lg">Features</label>
+
+  {/* Render each feature input */}
+  {features.map((feature, index) => (
+    <div key={index} className="flex gap-4 items-center">
+      <input
+        type="text"
+        value={feature}
+        onChange={(e) => handleFeatureChange(index, e.target.value)}
+        className="w-full p-4 border border-gray-300 rounded-lg"
+        placeholder={`Feature ${index + 1}`}
+      />
+
+      {/* Delete button with trash icon */}
+      <button
+        type="button"
+        onClick={() => handleDeleteFeature(index)} // Call the delete function on click
+        className="text-red-500 hover:text-red-700"
+      >
+        <AiOutlineDelete size={20} /> {/* Trash icon */}
+      </button>
+    </div>
+  ))}
+
+  {/* Add Feature button with + icon */}
+  <button
+  type="button"
+  onClick={handleAddFeature}
+  className="mt-2 flex  items-center gap-2 text-grey-500"
+>
+  Add another feature
+  <CiCirclePlus size={25} className="text-green-500" />
+{/* Display the plus icon */}
+</button>
+
+</div>
+
 
               {/* Revision Number */}
               <div className="space-y-2">

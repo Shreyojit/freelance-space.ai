@@ -22,3 +22,8 @@
     animation: none; /* Stop animation when hovered */
   }
   
+  
+/* TailwindCSS + Custom CSS for spinner */
+.spinner-border {
+  border-top-color: transparent;
+}
