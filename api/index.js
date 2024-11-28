@@ -49,6 +49,8 @@ app.use(
       }
     },
     credentials: true, // Allow cookies or authentication headers
+    
+    optionsSuccessStatus: 200,
   })
 );
 
