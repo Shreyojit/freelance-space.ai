@@ -20,7 +20,7 @@ import Success from "./pages/Success";
 function App() {
   const queryClient = new QueryClient();
 
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8800"; // Default to localhost if env var is not available
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8800" || "https://freelance-space-ai-1.onrender.com"; // Default to localhost if env var is not available
 
   // Configure axios defaults globally
   axios.defaults.baseURL = apiUrl; // Set backend base URL from environment variable
