@@ -32,12 +32,16 @@ const app = express();
 
 
 
-const allowedOrigins = [
+
+  const allowedOrigins = [
   "http://localhost:3000", // Frontend local domain
   "https://freelance-space-1m7r4fbnu-shreyos-projects.vercel.app", // Vercel production domain
-  "https://freelance-space-ai.vercel.app"
+  "https://freelance-space-ai.vercel.app", // Another Vercel production domain
+  "https://freelance-space-ai-git-main-shreyos-projects.vercel.app", // Add your missing Vercel domain
   "https://yourdomain.com", // Custom production domain (if applicable)
 ];
+
+
 
 // Configure CORS
 app.use(
