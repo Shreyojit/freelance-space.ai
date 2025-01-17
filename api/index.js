@@ -35,6 +35,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000", // Frontend local domain
   "https://freelance-space-1m7r4fbnu-shreyos-projects.vercel.app", // Vercel production domain
+  "https://freelance-space-ai.vercel.app"
   "https://yourdomain.com", // Custom production domain (if applicable)
 ];
 
